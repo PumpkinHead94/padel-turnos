@@ -1,0 +1,7 @@
+{
+  "name": "PadelMaster - Gestión y Torneos",
+  "description": "Una aplicación integral para gestionar turnos de pádel, encontrar parejas para partidas de dobles y organizar fixtures de torneos profesionales.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
