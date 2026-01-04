@@ -3,251 +3,308 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PadelMaster</title>
+  <title>PadelMaster - Sistema de Reservas</title>
   <script src="https://sdk.mercadopago.com/js/v2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; padding: 20px; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
     .container { max-width: 1200px; margin: auto; }
     .header { text-align: center; color: white; margin-bottom: 40px; }
     .header h1 { font-size: 2.5em; margin-bottom: 10px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-    .card { background: white; border-radius: 8px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
     .card h2 { color: #667eea; margin-bottom: 15px; font-size: 1.5em; }
     .form-group { margin-bottom: 15px; }
     label { display: block; color: #333; margin-bottom: 5px; font-weight: 500; font-size: 14px; }
     input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-    button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
     button:hover { background: #764ba2; }
     button:disabled { background: #ccc; cursor: not-allowed; }
-    .item { padding: 12px; background: #f0f0f0; margin: 8px 0; border-left: 3px solid #667eea; border-radius: 3px; font-size: 13px; }
-    .success { background: #4caf50; color: white; padding: 10px; border-radius: 4px; margin-bottom: 15px; display: none; text-align: center; font-size: 13px; }
-    .info { background: #e3f2fd; color: #1565c0; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 12px; border-left: 3px solid #1565c0; }
+    .item {
+      padding: 12px;
+      background: #f0f0f0;
+      margin: 8px 0;
+      border-left: 3px solid #667eea;
+      border-radius: 3px;
+      font-size: 13px;
+    }
+    .success {
+      background: #4caf50;
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      display: none;
+      text-align: center;
+      font-size: 13px;
+    }
+    .info {
+      background: #e3f2fd;
+      color: #1565c0;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 12px;
+      border-left: 3px solid #1565c0;
+    }
     #mpButton { display: none; }
     .reserva-btn { display: none; }
     .hidden { display: none; }
+    .payment-methods {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .method-btn {
+      padding: 10px;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+    .method-btn.active { border-color: #667eea; background: #f0f0ff; }
     @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>PadelMaster</h1>
-      <p>Reserva de Turnos - Paga Primero</p>
+      <h1>🎱 PadelMaster</h1>
+      <p>Sistema de Reserva de Turnos - Pago Requerido</p>
     </div>
+    
     <div class="grid">
+      <!-- Formulario de Reserva -->
       <div class="card">
-        <h2>Datos de Reserva</h2>
-        <div class="success" id="success">✓ ¡Pago acreditado! Ahora guarda tu reserva</div>
-        <form id="reservaForm" onsubmit="guardarReserva(event)">
+        <h2>Nueva Reserva</h2>
+        <div class="success" id="successMsg">Reserva confirmada con pago realizado ✓</div>
+        <div class="info">Completa los datos para reservar tu turno. El pago es obligatorio.</div>
+        
+        <form id="reservationForm">
           <div class="form-group">
-            <label>Nombre</label>
+            <label>Nombre Completo *</label>
             <input type="text" id="nombre" required>
           </div>
+          
           <div class="form-group">
-            <label>Email</label>
+            <label>Email *</label>
             <input type="email" id="email" required>
           </div>
+          
           <div class="form-group">
-            <label>Teléfono</label>
-            <input type="tel" id="tel" required>
+            <label>DNI *</label>
+            <input type="text" id="dni" required>
           </div>
+          
           <div class="form-group">
-            <label>Cancha</label>
-            <select id="cancha" required>
-              <option value="">Seleccionar...</option>
-              <option>Cancha 1</option>
-              <option>Cancha 2</option>
-              <option>Cancha 3</option>
-              <option>Cancha 4</option>
-            </select>
+            <label>Teléfono *</label>
+            <input type="tel" id="telefono" required>
           </div>
+          
           <div class="form-group">
-            <label>Fecha</label>
+            <label>Fecha de Turno *</label>
             <input type="date" id="fecha" required>
           </div>
+          
           <div class="form-group">
-            <label>Hora</label>
-            <select id="hora" required>
-              <option value="">Seleccionar...</option>
-              <option>08:00</option>
-              <option>09:00</option>
-              <option>10:00</option>
-              <option>11:00</option>
-              <option>12:00</option>
-              <option>13:00</option>
-              <option>14:00</option>
-              <option>15:00</option>
-              <option>16:00</option>
-              <option>17:00</option>
-              <option>18:00</option>
-              <option>19:00</option>
-              <option>20:00</option>
-              <option>21:00</option>
+            <label>Horario *</label>
+            <select id="horario" required>
+              <option value="">Selecciona horario</option>
+              <option value="09:00">09:00 - 10:30</option>
+              <option value="10:30">10:30 - 12:00</option>
+              <option value="12:00">12:00 - 13:30</option>
+              <option value="13:30">13:30 - 15:00</option>
+              <option value="15:00">15:00 - 16:30</option>
+              <option value="16:30">16:30 - 18:00</option>
+              <option value="18:00">18:00 - 19:30</option>
+              <option value="19:30">19:30 - 21:00</option>
             </select>
           </div>
-          <button type="submit" class="reserva-btn" id="guardarBtn" disabled>📅 Guardar Reserva</button>
+          
+          <div class="form-group">
+            <label>Cantidad de Jugadores *</label>
+            <select id="jugadores" required>
+              <option value="">Selecciona cantidad</option>
+              <option value="2">2 Jugadores</option>
+              <option value="3">3 Jugadores</option>
+              <option value="4">4 Jugadores</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Método de Pago *</label>
+            <div class="payment-methods">
+              <button type="button" class="method-btn" data-method="mercadopago">Mercado Pago</button>
+              <button type="button" class="method-btn" data-method="efectivo">Efectivo</button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Costo: $<span id="price">500</span></label>
+          </div>
+          
+          <button type="submit" id="submitBtn">Proceder al Pago</button>
         </form>
       </div>
+      
+      <!-- Panel de Reservas Confirmadas -->
       <div class="card">
-        <h2>Pagar Reserva</h2>
-        <div class="info" id="infoDiv">
-          💳 Completa los datos y paga primero
-        </div>
-        <div class="form-group">
-          <label>Precio por turno (ARS)</label>
-          <input type="number" id="precio" value="500" min="1" required>
-        </div>
-        <div id="mpButton"></div>
-        <button id="pagarMPBtn" onclick="iniciarPago()">💳 Pagar con Mercado Pago</button>
-        <div style="margin-top: 20px;">
-          <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1.1em;">📋 Mis Reservas</h3>
-          <div id="reservas"></div>
-        </div>
+        <h2>Mis Reservas</h2>
+        <div class="info">Aquí aparecerán tus reservas confirmadas</div>
+        <div id="reservationsList"></div>
+        <button id="btnConsultar">Buscar mis Reservas</button>
       </div>
     </div>
   </div>
-
+  
+  <!-- Contenedor para Mercado Pago -->
+  <div id="mpButton"></div>
+  
   <script>
-    const TOKEN_MP = 'APP_USR-1062188237322463-010320-eedfc0c59fd646c15fd957f7141688b1-131807830';
-    let pagoAcreditado = false;
+    let paymentSelected = null;
     
-    function iniciarPago() {
-      const nombre = document.getElementById('nombre').value;
-      const email = document.getElementById('email').value;
-      const precio = document.getElementById('precio').value;
-      const cancha = document.getElementById('cancha').value;
-      const fecha = document.getElementById('fecha').value;
-      const hora = document.getElementById('hora').value;
-      
-      if (!nombre || !email || !cancha || !fecha || !hora) {
-        alert('Completa todos los datos');
-        return;
-      }
-      
-      crearPreferenciaMP(nombre, email, precio, cancha, fecha, hora);
-    }
+    // Inicializar Mercado Pago
+    const mp = new MercadoPago('APP_USR-YOUR-PUBLIC-KEY-HERE', {
+      locale: 'es-AR'
+    });
     
-    function crearPreferenciaMP(nombre, email, precio, cancha, fecha, hora) {
-      const preferenceData = {
-        items: [
-          {
-            title: `Reserva ${cancha} - ${fecha} ${hora}h`,
-            quantity: 1,
-            currency_id: 'ARS',
-            unit_price: parseInt(precio)
-          }
-        ],
-        payer: {
-          name: nombre,
-          email: email
-        },
-        back_urls: {
-          success: window.location.href + '?pago=success',
-          failure: window.location.href,
-          pending: window.location.href
-        },
-        notification_url: 'https://pumpkinhead94.github.io/padel-turnos/',
-        auto_return: 'approved'
-      };
-      
-      fetch('https://api.mercadopago.com/checkout/preferences', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${TOKEN_MP}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(preferenceData)
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Preferencia creada:', data);
-        if (data.init_point) {
-          window.location.href = data.init_point;
-        } else if (data.sandbox_init_point) {
-          window.location.href = data.sandbox_init_point;
-        } else {
-          alert('Error al crear preferencia: ' + JSON.stringify(data));
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('Error al conectar con Mercado Pago: ' + error);
+    // Event Listeners
+    document.querySelectorAll('.method-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        paymentSelected = btn.dataset.method;
       });
-    }
+    });
     
-    function verificarPago() {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('pago') === 'success' || params.has('preference_id')) {
-        pagoAcreditado = true;
-        document.getElementById('pagarMPBtn').style.display = 'none';
-        document.getElementById('infoDiv').innerHTML = '✅ Pago acreditado! Completa y guarda tu reserva';
-        document.getElementById('infoDiv').style.background = '#c8e6c9';
-        document.getElementById('infoDiv').style.color = '#2e7d32';
-        document.getElementById('guardarBtn').disabled = false;
-        document.getElementById('guardarBtn').style.display = 'block';
-        document.getElementById('success').style.display = 'block';
-      }
-    }
-    
-    function guardarReserva(event) {
-      event.preventDefault();
+    document.getElementById('reservationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
       
-      if (!pagoAcreditado) {
-        alert('Debes pagar primero');
+      if (!paymentSelected) {
+        alert('Selecciona un método de pago');
         return;
       }
       
-      const reserva = {
+      const formData = {
         nombre: document.getElementById('nombre').value,
         email: document.getElementById('email').value,
-        telefono: document.getElementById('tel').value,
-        cancha: document.getElementById('cancha').value,
+        dni: document.getElementById('dni').value,
+        telefono: document.getElementById('telefono').value,
         fecha: document.getElementById('fecha').value,
-        hora: document.getElementById('hora').value,
-        precio: document.getElementById('precio').value
+        horario: document.getElementById('horario').value,
+        jugadores: document.getElementById('jugadores').value,
+        metodo_pago: paymentSelected,
+        monto: 500
       };
       
-      let reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
-      reservas.push(reserva);
-      localStorage.setItem('reservas', JSON.stringify(reservas));
-      
-      const s = document.getElementById('success');
-      s.innerHTML = '✅ ¡Reserva guardada con pago acreditado!';
-      s.style.display = 'block';
-      
-      setTimeout(() => {
-        event.target.reset();
-        mostrarReservas();
-        pagoAcreditado = false;
-        document.getElementById('guardarBtn').disabled = true;
-        document.getElementById('pagarMPBtn').style.display = 'block';
-        document.getElementById('infoDiv').innerHTML = '💳 Realiza el pago para reservar';
-        document.getElementById('infoDiv').style.background = '#e3f2fd';
-        document.getElementById('infoDiv').style.color = '#1565c0';
-        s.style.display = 'none';
-      }, 2000);
-    }
-    
-    function mostrarReservas() {
-      const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
-      const c = document.getElementById('reservas');
-      c.innerHTML = '';
-      if (reservas.length === 0) {
-        c.innerHTML = '<p style="color: #999; font-size: 13px;">Sin reservas aún</p>';
-        return;
+      if (paymentSelected === 'mercadopago') {
+        procesarPagoMercadoPago(formData);
+      } else {
+        procesarPagoEfectivo(formData);
       }
-      reservas.forEach(r => {
-        const d = document.createElement('div');
-        d.className = 'item';
-        d.innerHTML = `<strong>${r.cancha}</strong><br>${r.fecha} a las ${r.hora}<br><small>${r.nombre} - $${r.precio}</small>`;
-        c.appendChild(d);
-      });
+    });
+    
+    function procesarPagoMercadoPago(formData) {
+      // Crear preferencia de pago
+      fetch('/crear-preferencia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: [{
+            title: 'Reserva de Turno de Pádel',
+            quantity: 1,
+            unit_price: formData.monto,
+            description: `${formData.fecha} - ${formData.horario}`
+          }],
+          payer: {
+            name: formData.nombre,
+            email: formData.email,
+            phone: { number: formData.telefono },
+            identification: { type: 'DNI', number: formData.dni }
+          }
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.id) {
+          mp.bricks().create('wallet', { initialization: { preferenceId: data.id } });
+          document.getElementById('mpButton').style.display = 'block';
+        }
+      })
+      .catch(err => console.error('Error:', err));
     }
     
-    window.addEventListener('load', () => {
-      verificarPago();
-      mostrarReservas();
+    function procesarPagoEfectivo(formData) {
+      // Guardar reserva con pago pendiente
+      fetch('/crear-reserva', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, estado: 'pendiente_pago' })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          mostrarExito(`Reserva creada. Nº: ${data.id}. Paga en local.`);
+          document.getElementById('reservationForm').reset();
+          document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+          paymentSelected = null;
+        }
+      })
+      .catch(err => console.error('Error:', err));
+    }
+    
+    function mostrarExito(mensaje) {
+      const successMsg = document.getElementById('successMsg');
+      successMsg.textContent = mensaje;
+      successMsg.style.display = 'block';
+      setTimeout(() => { successMsg.style.display = 'none'; }, 5000);
+    }
+    
+    document.getElementById('btnConsultar').addEventListener('click', () => {
+      const email = prompt('Ingresa tu email para ver tus reservas:');
+      if (email) {
+        fetch(`/mis-reservas?email=${email}`)
+          .then(r => r.json())
+          .then(data => {
+            const list = document.getElementById('reservationsList');
+            if (data.reservas && data.reservas.length > 0) {
+              list.innerHTML = data.reservas.map(r => `
+                <div class="item">
+                  <strong>${r.fecha} ${r.horario}</strong><br>
+                  ${r.nombre} | ${r.jugadores} jugadores<br>
+                  Estado: <span style="color: ${r.estado === 'confirmada' ? 'green' : 'orange'}">${r.estado}</span>
+                </div>
+              `).join('');
+            } else {
+              list.innerHTML = '<div class="item">No hay reservas encontradas</div>';
+            }
+          })
+          .catch(err => console.error('Error:', err));
+      }
     });
   </script>
 </body>
