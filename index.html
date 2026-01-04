@@ -122,6 +122,9 @@
             const boton = document.querySelector('button[type="submit"]');
             boton.textContent = '🔗 Pagar $' + monto + ' con Mercado Pago';
         });
+         // Inicializar precio del botón al cargar
+         const precioInicial = document.getElementById('duracion').value;
+         document.querySelector('button[type="submit"]').textContent = '🔗 Pagar $' + precioInicial + ' con Mercado Pago';
 
         document.getElementById('reservaForm').addEventListener('submit', async function(e) {
             e.preventDefault();
