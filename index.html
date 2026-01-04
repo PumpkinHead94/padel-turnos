@@ -1,311 +1,322 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PadelMaster - Sistema de Reservas</title>
-  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PadelMaster - Gestión de Turnos</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: "Inter", sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       padding: 20px;
     }
-    .container { max-width: 1200px; margin: auto; }
-    .header { text-align: center; color: white; margin-bottom: 40px; }
-    .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
     .card {
       background: white;
-      border-radius: 8px;
-      padding: 25px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
-    .card h2 { color: #667eea; margin-bottom: 15px; font-size: 1.5em; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; color: #333; margin-bottom: 5px; font-weight: 500; font-size: 14px; }
-    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-    button {
+
+    .card h2 {
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    input,
+    select {
       width: 100%;
       padding: 12px;
-      background: #667eea;
+      border: 2px solid #e0e0e0;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
-      border-radius: 4px;
-      font-size: 14px;
+      border-radius: 5px;
+      font-size: 1.1em;
       font-weight: 600;
       cursor: pointer;
     }
-    button:hover { background: #764ba2; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    .item {
-      padding: 12px;
-      background: #f0f0f0;
-      margin: 8px 0;
-      border-left: 3px solid #667eea;
-      border-radius: 3px;
-      font-size: 13px;
+
+    button:hover {
+      transform: translateY(-2px);
     }
-    .success {
+
+    .schedule-items {
+      margin-top: 20px;
+    }
+
+    .schedule-item {
+      padding: 15px;
+      background: #f5f5f5;
+      border-left: 4px solid #667eea;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    .schedule-item strong {
+      color: #667eea;
+    }
+
+    .success-message {
       background: #4caf50;
       color: white;
-      padding: 10px;
-      border-radius: 4px;
-      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
       display: none;
-      text-align: center;
-      font-size: 13px;
     }
-    .info {
-      background: #e3f2fd;
-      color: #1565c0;
-      padding: 10px;
-      border-radius: 4px;
-      margin-bottom: 15px;
-      font-size: 12px;
-      border-left: 3px solid #1565c0;
+
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.8em;
+      }
     }
-    #mpButton { display: none; }
-    .reserva-btn { display: none; }
-    .hidden { display: none; }
-    .payment-methods {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    .method-btn {
-      padding: 10px;
-      border: 2px solid #ddd;
-      background: white;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
-      transition: all 0.3s;
-    }
-    .method-btn.active { border-color: #667eea; background: #f0f0ff; }
-    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>🎱 PadelMaster</h1>
-      <p>Sistema de Reserva de Turnos - Pago Requerido</p>
-    </div>
-    
-    <div class="grid">
-      <!-- Formulario de Reserva -->
+    <header>
+      <h1>PadelMaster</h1>
+      <p class="subtitle">Gestión de Turnos de Pádel - San Carlos de Bolívar</p>
+    </header>
+
+    <div class="main-content">
       <div class="card">
-        <h2>Nueva Reserva</h2>
-        <div class="success" id="successMsg">Reserva confirmada con pago realizado ✓</div>
-        <div class="info">Completa los datos para reservar tu turno. El pago es obligatorio.</div>
-        
-        <form id="reservationForm">
+        <h2>📅 Reservar Turno</h2>
+
+        <div class="success-message" id="successMsg">
+          ✅ ¡Turno reservado correctamente!
+        </div>
+
+        <form id="reservaForm">
           <div class="form-group">
-            <label>Nombre Completo *</label>
-            <input type="text" id="nombre" required>
+            <label>Nombre Completo</label>
+            <input type="text" id="nombre" required />
           </div>
-          
+
           <div class="form-group">
-            <label>Email *</label>
-            <input type="email" id="email" required>
+            <label>Email</label>
+            <input type="email" id="email" required />
           </div>
-          
+
           <div class="form-group">
-            <label>DNI *</label>
-            <input type="text" id="dni" required>
+            <label>Teléfono (WhatsApp)</label>
+            <input type="tel" id="telefono" required />
           </div>
-          
+
           <div class="form-group">
-            <label>Teléfono *</label>
-            <input type="tel" id="telefono" required>
-          </div>
-          
-          <div class="form-group">
-            <label>Fecha de Turno *</label>
-            <input type="date" id="fecha" required>
-          </div>
-          
-          <div class="form-group">
-            <label>Horario *</label>
-            <select id="horario" required>
-              <option value="">Selecciona horario</option>
-              <option value="09:00">09:00 - 10:30</option>
-              <option value="10:30">10:30 - 12:00</option>
-              <option value="12:00">12:00 - 13:30</option>
-              <option value="13:30">13:30 - 15:00</option>
-              <option value="15:00">15:00 - 16:30</option>
-              <option value="16:30">16:30 - 18:00</option>
-              <option value="18:00">18:00 - 19:30</option>
-              <option value="19:30">19:30 - 21:00</option>
+            <label>Cancha</label>
+            <select id="cancha" required>
+              <option>Cancha 1 - Interior (LED)</option>
+              <option>Cancha 2 - Interior (LED)</option>
+              <option>Cancha 3 - Exterior (Piso Sintético)</option>
+              <option>Cancha 4 - Exterior (Piso Sintético)</option>
             </select>
           </div>
-          
+
           <div class="form-group">
-            <label>Cantidad de Jugadores *</label>
+            <label>Fecha</label>
+            <input type="date" id="fecha" required />
+          </div>
+
+          <div class="form-group">
+            <label>Hora Inicio</label>
+            <select id="hora" required>
+              <option>08:00</option>
+              <option>09:30</option>
+              <option>11:00</option>
+              <option>12:30</option>
+              <option>14:00</option>
+              <option>15:30</option>
+              <option>17:00</option>
+              <option>18:30</option>
+              <option>20:00</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Duración</label>
+            <select id="duracion" required>
+              <option value="60">60 minutos - $400</option>
+              <option value="90">90 minutos - $550</option>
+              <option value="120">120 minutos - $700</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Jugadores</label>
             <select id="jugadores" required>
-              <option value="">Selecciona cantidad</option>
-              <option value="2">2 Jugadores</option>
-              <option value="3">3 Jugadores</option>
-              <option value="4">4 Jugadores</option>
+              <option>2 Jugadores</option>
+              <option>3 Jugadores</option>
+              <option>4 Jugadores</option>
             </select>
           </div>
-          
-          <div class="form-group">
-            <label>Método de Pago *</label>
-            <div class="payment-methods">
-              <button type="button" class="method-btn" data-method="mercadopago">Mercado Pago</button>
-              <button type="button" class="method-btn" data-method="efectivo">Efectivo</button>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label>Costo: $<span id="price">500</span></label>
-          </div>
-          
-          <button type="submit" id="submitBtn">Proceder al Pago</button>
+
+          <button type="submit">🔗 Pagar con Mercado Pago</button>
         </form>
       </div>
-      
-      <!-- Panel de Reservas Confirmadas -->
+
       <div class="card">
-        <h2>Mis Reservas</h2>
-        <div class="info">Aquí aparecerán tus reservas confirmadas</div>
-        <div id="reservationsList"></div>
-        <button id="btnConsultar">Buscar mis Reservas</button>
+        <h2>📋 Próximos Turnos</h2>
+        <div class="schedule-items" id="scheduleItems">
+          <p style="color: #999; text-align: center; padding: 20px;">
+            Aún no hay turnos
+          </p>
+        </div>
       </div>
     </div>
   </div>
-  
-  <!-- Contenedor para Mercado Pago -->
-  <div id="mpButton"></div>
-  
+
   <script>
-    let paymentSelected = null;
-    
-    // Inicializar Mercado Pago
-    const mp = new MercadoPago('APP_USR-1062188237322463-010320-eedfc0c59fd646c15fd957f7141688b1-131807830', {
-      locale: 'es-AR'
-    });
-    
-    // Event Listeners
-    document.querySelectorAll('.method-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("fecha").setAttribute("min", today);
+
+    function calcularMonto(duracion) {
+      if (duracion === "60") return 400;
+      if (duracion === "90") return 550;
+      if (duracion === "120") return 700;
+      return 0;
+    }
+
+    document
+      .getElementById("reservaForm")
+      .addEventListener("submit", async function (e) {
         e.preventDefault();
-        document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        paymentSelected = btn.dataset.method;
+
+        const duracion = document.getElementById("duracion").value;
+
+        const datos = {
+          nombre: document.getElementById("nombre").value,
+          email: document.getElementById("email").value,
+          telefono: document.getElementById("telefono").value,
+          cancha: document.getElementById("cancha").value,
+          fecha: document.getElementById("fecha").value,
+          hora: document.getElementById("hora").value,
+          duracion: duracion,
+          jugadores: document.getElementById("jugadores").value,
+          monto: calcularMonto(duracion),
+        };
+
+        try {
+          const res = await fetch("/api/create-preference", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos),
+          });
+
+          const data = await res.json();
+
+          if (data.init_point || data.initpoint) {
+            window.location.href = data.init_point || data.initpoint;
+            return;
+          } else {
+            alert("Error al crear la preferencia de pago");
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Error de conexión con Mercado Pago");
+        }
+
+        let reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+        reservas.push(datos);
+        localStorage.setItem("reservas", JSON.stringify(reservas));
+
+        document.getElementById("successMsg").style.display = "block";
+        setTimeout(() => {
+          document.getElementById("successMsg").style.display = "none";
+        }, 4000);
+
+        this.reset();
+        mostrarTurnos();
       });
-    });
-    
-    document.getElementById('reservationForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      if (!paymentSelected) {
-        alert('Selecciona un método de pago');
+
+    function mostrarTurnos() {
+      const reservas = JSON.parse(localStorage.getItem("reservas")) || [];
+      const container = document.getElementById("scheduleItems");
+
+      if (reservas.length === 0) {
+        container.innerHTML =
+          '<p style="color: #999; text-align: center; padding: 20px;">Aún no hay turnos</p>';
         return;
       }
-      
-      const formData = {
-        nombre: document.getElementById('nombre').value,
-        email: document.getElementById('email').value,
-        dni: document.getElementById('dni').value,
-        telefono: document.getElementById('telefono').value,
-        fecha: document.getElementById('fecha').value,
-        horario: document.getElementById('horario').value,
-        jugadores: document.getElementById('jugadores').value,
-        metodo_pago: paymentSelected,
-        monto: 500
-      };
-      
-      if (paymentSelected === 'mercadopago') {
-        procesarPagoMercadoPago(formData);
-      } else {
-        procesarPagoEfectivo(formData);
-      }
-    });
-    
-    function procesarPagoMercadoPago(formData) {
-      // Crear preferencia de pago
-      fetch('/crear-preferencia', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: [{
-            title: 'Reserva de Turno de Pádel',
-            quantity: 1,
-            unit_price: formData.monto,
-            description: `${formData.fecha} - ${formData.horario}`
-          }],
-          payer: {
-            name: formData.nombre,
-            email: formData.email,
-            phone: { number: formData.telefono },
-            identification: { type: 'DNI', number: formData.dni }
-          }
-        })
-      })
-      .then(r => r.json())
-      .then(data => {
-        if (data.id) {
-          mp.bricks().create('wallet', { initialization: { preferenceId: data.id } });
-          document.getElementById('mpButton').style.display = 'block';
-        }
-      })
-      .catch(err => console.error('Error:', err));
+
+      container.innerHTML = reservas
+        .map(
+          (r) => `
+        <div class="schedule-item">
+          <strong>${r.cancha}</strong> - ${r.fecha} ${r.hora}<br>
+          ${r.nombre}<br>
+          ${r.duracion} min - ${r.jugadores} jugadores
+        </div>
+      `
+        )
+        .join("");
     }
-    
-    function procesarPagoEfectivo(formData) {
-      // Guardar reserva con pago pendiente
-      fetch('/crear-reserva', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, estado: 'pendiente_pago' })
-      })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) {
-          mostrarExito(`Reserva creada. Nº: ${data.id}. Paga en local.`);
-          document.getElementById('reservationForm').reset();
-          document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
-          paymentSelected = null;
-        }
-      })
-      .catch(err => console.error('Error:', err));
-    }
-    
-    function mostrarExito(mensaje) {
-      const successMsg = document.getElementById('successMsg');
-      successMsg.textContent = mensaje;
-      successMsg.style.display = 'block';
-      setTimeout(() => { successMsg.style.display = 'none'; }, 5000);
-    }
-    
-    document.getElementById('btnConsultar').addEventListener('click', () => {
-      const email = prompt('Ingresa tu email para ver tus reservas:');
-      if (email) {
-        fetch(`/mis-reservas?email=${email}`)
-          .then(r => r.json())
-          .then(data => {
-            const list = document.getElementById('reservationsList');
-            if (data.reservas && data.reservas.length > 0) {
-              list.innerHTML = data.reservas.map(r => `
-                <div class="item">
-                  <strong>${r.fecha} ${r.horario}</strong><br>
-                  ${r.nombre} | ${r.jugadores} jugadores<br>
-                  Estado: <span style="color: ${r.estado === 'confirmada' ? 'green' : 'orange'}">${r.estado}</span>
-                </div>
-              `).join('');
-            } else {
-              list.innerHTML = '<div class="item">No hay reservas encontradas</div>';
-            }
-          })
-          .catch(err => console.error('Error:', err));
-      }
-    });
+
+    mostrarTurnos();
   </script>
 </body>
 </html>
