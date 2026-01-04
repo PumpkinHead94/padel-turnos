@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PadelMaster - Gestión de Turnos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; color: white; margin-bottom: 40px; padding: 20px; }
+        h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .subtitle { font-size: 1.1em; opacity: 0.9; }
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .card { 
+            background: white; border-radius: 10px; padding: 30px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .card h2 { color: #667eea; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 1em; }
+        input:focus, select:focus { outline: none; border-color: #667eea; }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 5px; font-size: 1.1em; font-weight: 600; cursor: pointer; }
+        button:hover { transform: translateY(-2px); }
+        .schedule-items { margin-top: 20px; }
+        .schedule-item { padding: 15px; background: #f5f5f5; border-left: 4px solid #667eea; margin-bottom: 10px; border-radius: 5px; }
+        .schedule-item strong { color: #667eea; }
+        .success-message { background: #4caf50; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; display: none; }
+        @media (max-width: 768px) {
+            .main-content { grid-template-columns: 1fr; }
+            h1 { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎾 PadelMaster</h1>
+            <p class="subtitle">Gestión de Turnos de Pádel - San Carlos de Bolívar</p>
+        </header>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📅 Reservar Turno</h2>
+                <div class="success-message" id="successMsg">✅ ¡Turno reservado correctamente!</div>
+                <form id="reservaForm">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Telefóno (WhatsApp)</label>
+                        <input type="tel" id="telefono" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cancha</label>
+                        <select id="cancha" required>
+                            <option>Cancha 1 - Interior (LED)</option>
+                            <option>Cancha 2 - Interior (LED)</option>
+                            <option>Cancha 3 - Exterior (Piso Sintético)</option>
+                            <option>Cancha 4 - Exterior (Piso Sintético)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input type="date" id="fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora Inicio</label>
+                        <select id="hora" required>
+                            <option>08:00</option>
+                            <option>09:30</option>
+                            <option>11:00</option>
+                            <option>12:30</option>
+                            <option>14:00</option>
+                            <option>15:30</option>
+                            <option>17:00</option>
+                            <option>18:30</option>
+                            <option>20:00</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Duración</label>
+                        <select id="duracion" required>
+                            <option value="60">60 minutos - $400</option>
+                            <option value="90">90 minutos - $550</option>
+                            <option value="120">120 minutos - $700</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Jugadores</label>
+                        <select id="jugadores" required>
+                            <option>2 Jugadores</option>
+                            <option>3 Jugadores</option>
+                            <option>4 Jugadores</option>
+                        </select>
+                    </div>
+                    <button type="submit">🔗 Pagar con Mercado Pago</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📋 Próximos Turnos</h2>
+                <div class="schedule-items" id="scheduleItems">
+                    <p style="color: #999; text-align: center; padding: 20px;">Aún no hay turnos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('fecha').setAttribute('min', today);
+
+        document.getElementById('reservaForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const datos = {
+                nombre: document.getElementById('nombre').value,
+                email: document.getElementById('email').value,
+                telefono: document.getElementById('telefono').value,
+                cancha: document.getElementById('cancha').value,
+                fecha: document.getElementById('fecha').value,
+                hora: document.getElementById('hora').value,
+                duracion: document.getElementById('duracion').value,
+                jugadores: document.getElementById('jugadores').value,
+                timestamp: new Date().toLocaleString('es-AR')
+            };
+            let reservas = JSON.parse(localStorage.getItem('reservas')) || [];
+            reservas.push(datos);
+            localStorage.setItem('reservas', JSON.stringify(reservas));
+            document.getElementById('successMsg').style.display = 'block';
+            setTimeout(() => { document.getElementById('successMsg').style.display = 'none'; }, 4000);
+            this.reset();
+            mostrarTurnos();
+        });
+        
+        function mostrarTurnos() {
+            const reservas = JSON.parse(localStorage.getItem('reservas')) || [];
+            const container = document.getElementById('scheduleItems');
+            if (reservas.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Aún no hay turnos</p>';
+                return;
+            }
+            container.innerHTML = reservas.map(r => `<div class="schedule-item"><strong>${r.cancha}</strong> - ${r.fecha} ${r.hora}<br>👤 ${r.nombre}<br>⏱️ ${r.duracion} min - ${r.jugadores}</div>`).join('');
+        }
+        mostrarTurnos();
+    </script>
+</body>
+</html>
