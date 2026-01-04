@@ -87,17 +87,17 @@
       <div class="card">
         <h2>Pagar Reserva</h2>
         <div class="info">
-          💳 Selecciona tu método de pago preferido
+          💳 Coordina el pago por WhatsApp
         </div>
         <div class="form-group">
           <label>Precio por turno (ARS)</label>
           <input type="number" id="precio" value="500" min="1" required>
         </div>
-        <button onclick="pagarMP()" style="background: #009ee3; margin-bottom: 10px;">
-          💳 Mercado Pago
-        </button>
-        <button onclick="pagarWhatsapp()" style="background: #25d366;">
+        <button onclick="pagarWhatsapp()" style="background: #25d366; margin-bottom: 10px;">
           💬 Pagar por WhatsApp
+        </button>
+        <button onclick="llamarWhatsapp()" style="background: #128c7e;">
+          📞 Llamar por WhatsApp
         </button>
         <div style="margin-top: 20px;">
           <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1.1em;">📋 Mis Reservas</h3>
@@ -108,6 +108,8 @@
   </div>
 
   <script>
+    const NUMERO_WHATSAPP = '542314404315';
+    
     function guardar(event) {
       event.preventDefault();
       const reserva = {
@@ -144,20 +146,6 @@
       });
     }
 
-    function pagarMP() {
-      const nombre = document.getElementById('nombre').value;
-      const email = document.getElementById('email').value;
-      const precio = document.getElementById('precio').value;
-      
-      if (!nombre || !email) {
-        alert('Completa nombre y email');
-        return;
-      }
-      
-      const url = `https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=null&payer_email=${encodeURIComponent(email)}&items[0][title]=${encodeURIComponent('Reserva Pádel')}&items[0][quantity]=1&items[0][unit_price]=${precio}`;
-      window.open(url, '_blank');
-    }
-
     function pagarWhatsapp() {
       const nombre = document.getElementById('nombre').value;
       const cancha = document.getElementById('cancha').value;
@@ -171,8 +159,13 @@
         return;
       }
       
-      const mensaje = `Hola! Quiero pagar la reserva de pádel\n\n👤 Nombre: ${nombre}\n🏐 Cancha: ${cancha}\n📅 Fecha: ${fecha}\n🕐 Hora: ${hora}\n💰 Monto: $${precio} ARS\n📱 Tel: ${telefono}`;
-      const url = `https://wa.me/5491125555555?text=${encodeURIComponent(mensaje)}`;
+      const mensaje = `Hola! Quiero pagar la reserva de pádel\n\n👤 Nombre: ${nombre}\n🏐 Cancha: ${cancha}\n📅 Fecha: ${fecha}\n🕐 Hora: ${hora}\n💰 Monto: $${precio} ARS\n📱 Teléfono: ${telefono}`;
+      const url = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+      window.open(url, '_blank');
+    }
+
+    function llamarWhatsapp() {
+      const url = `https://wa.me/${NUMERO_WHATSAPP}`;
       window.open(url, '_blank');
     }
     
