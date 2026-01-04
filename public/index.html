@@ -173,8 +173,7 @@
 
       // Redirigir a Mercado Pago (en una aplicación real, esto vendría del servidor)
       // Por ahora, abrimos la página principal de Mercado Pago
-      window.location.href = 'https://www.mercadopago.com.ar/checkout?preference_id=turno_padel_' + Date.now();
-    }
+fetch('/api/payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos) }).then(r => r.json()).then(d => { if(d.init_point) window.location.href = d.init_point; else alert('Error: ' + d.error); }).catch(e => { alert('Error de conexión: ' + e.message); console.error(e); });    }
 
     // Cargar turnos al iniciar
     function cargarTurnos() {
