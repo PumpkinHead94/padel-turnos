@@ -3,109 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PadelMaster - Reserva de Turnos</title>
+  <title>PadelMaster</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .container {
-      max-width: 1200px;
-      margin: auto;
-    }
-    .header {
-      text-align: center;
-      color: white;
-      margin-bottom: 40px;
-    }
-    .header h1 {
-      font-size: 2.5em;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-    }
-    .card {
-      background: white;
-      border-radius: 8px;
-      padding: 25px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-    .card h2 {
-      color: #667eea;
-      margin-bottom: 15px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      color: #333;
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #667eea;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #764ba2;
-    }
-    .item {
-      padding: 12px;
-      background: #f0f0f0;
-      margin: 8px 0;
-      border-left: 3px solid #667eea;
-      border-radius: 3px;
-    }
-    .success {
-      background: #4caf50;
-      color: white;
-      padding: 10px;
-      border-radius: 4px;
-      margin-bottom: 15px;
-      display: none;
-      text-align: center;
-    }
-    .price-section {
-      background: #f9f9f9;
-      padding: 15px;
-      border-radius: 4px;
-      margin-bottom: 15px;
-    }
-    .price-display {
-      font-size: 24px;
-      color: #667eea;
-      font-weight: bold;
-      text-align: center;
-    }
-    @media (max-width: 768px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; padding: 20px; }
+    .container { max-width: 1200px; margin: auto; }
+    .header { text-align: center; color: white; margin-bottom: 40px; }
+    .header h1 { font-size: 2.5em; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+    .card { background: white; border-radius: 8px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .card h2 { color: #667eea; margin-bottom: 15px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; color: #333; margin-bottom: 5px; font-weight: 500; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+    button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    button:hover { background: #764ba2; }
+    .item { padding: 12px; background: #f0f0f0; margin: 8px 0; border-left: 3px solid #667eea; border-radius: 3px; }
+    .success { background: #4caf50; color: white; padding: 10px; border-radius: 4px; margin-bottom: 15px; display: none; text-align: center; }
+    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -120,20 +35,20 @@
         <div class="success" id="success">¡Reserva guardada!</div>
         <form onsubmit="guardar(event)">
           <div class="form-group">
-            <label>Nombre</label>
+            <label>Nombre *</label>
             <input type="text" id="nombre" required>
           </div>
           <div class="form-group">
-            <label>Email</label>
+            <label>Email *</label>
             <input type="email" id="email" required>
           </div>
           <div class="form-group">
             <label>Teléfono</label>
-            <input type="tel" id="tel" required>
+            <input type="tel" id="tel">
           </div>
           <div class="form-group">
             <label>Cancha</label>
-            <select id="cancha" required>
+            <select id="cancha">
               <option>Cancha 1</option>
               <option>Cancha 2</option>
               <option>Cancha 3</option>
@@ -142,11 +57,11 @@
           </div>
           <div class="form-group">
             <label>Fecha</label>
-            <input type="date" id="fecha" required>
+            <input type="text" id="fecha" placeholder="ej: 2026-01-15">
           </div>
           <div class="form-group">
             <label>Hora</label>
-            <select id="hora" required>
+            <select id="hora">
               <option>08:00</option>
               <option>09:00</option>
               <option>10:00</option>
@@ -167,15 +82,15 @@
         </form>
       </div>
       <div class="card">
-        <h2>Pagar</h2>
-        <div class="price-section">
-          <label>Precio por turno (ARS)</label>
+        <h2>Pagar en Mercado Pago</h2>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+          <label>Precio por turno (ARS) *</label>
           <div class="form-group" style="margin-bottom: 0;">
-            <input type="number" id="precio" value="500" min="1" step="1" required>
+            <input type="number" id="precio" value="500" min="1" required>
           </div>
         </div>
-        <button onclick="abrirMP()">Ir a Mercado Pago</button>
-        <div id="lista-reservas" style="margin-top: 20px;">
+        <button onclick="abrirMP()">🔘 Ir a Mercado Pago</button>
+        <div style="margin-top: 20px;">
           <h3 style="color: #667eea; margin-bottom: 10px;">Mis Reservas</h3>
           <div id="reservas"></div>
         </div>
@@ -186,95 +101,70 @@
   <script>
     function guardar(event) {
       event.preventDefault();
-      
       const reserva = {
         nombre: document.getElementById('nombre').value,
         email: document.getElementById('email').value,
         telefono: document.getElementById('tel').value,
         cancha: document.getElementById('cancha').value,
         fecha: document.getElementById('fecha').value,
-        hora: document.getElementById('hora').value,
-        id: Date.now()
+        hora: document.getElementById('hora').value
       };
-      
       let reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
       reservas.push(reserva);
       localStorage.setItem('reservas', JSON.stringify(reservas));
-      
-      const successDiv = document.getElementById('success');
-      successDiv.style.display = 'block';
-      setTimeout(() => {
-        successDiv.style.display = 'none';
-      }, 3000);
-      
+      const s = document.getElementById('success');
+      s.style.display = 'block';
+      setTimeout(() => { s.style.display = 'none'; }, 3000);
       event.target.reset();
       mostrarReservas();
     }
 
     function mostrarReservas() {
       const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
-      const container = document.getElementById('reservas');
-      container.innerHTML = '';
-      
+      const c = document.getElementById('reservas');
+      c.innerHTML = '';
       reservas.forEach(r => {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `${r.cancha} - ${r.fecha} ${r.hora}<br><small>${r.nombre}</small>`;
-        container.appendChild(div);
+        const d = document.createElement('div');
+        d.className = 'item';
+        d.innerHTML = `${r.cancha} - ${r.fecha || '?'} ${r.hora}<br><small>${r.nombre}</small>`;
+        c.appendChild(d);
       });
     }
 
     function abrirMP() {
-      const nombre = document.getElementById('nombre').value;
-      const email = document.getElementById('email').value;
-      const tel = document.getElementById('tel').value;
+      const nombre = document.getElementById('nombre').value || 'Cliente';
+      const email = document.getElementById('email').value || 'cliente@example.com';
+      const tel = document.getElementById('tel').value || '';
       const cancha = document.getElementById('cancha').value;
-      const fecha = document.getElementById('fecha').value;
+      const fecha = document.getElementById('fecha').value || 'Próximo';
       const hora = document.getElementById('hora').value;
-      const precio = parseFloat(document.getElementById('precio').value);
+      const precio = Math.round(parseFloat(document.getElementById('precio').value));
       
-      if (!nombre || !email || !fecha || !hora) {
-        alert('Por favor completa nombre, email, fecha y hora');
+      if (!nombre || !email) {
+        alert('Por favor completa nombre y email');
         return;
       }
       
-      // Crear descripción del item
-      const descripcion = encodeURIComponent(`Reserva: ${cancha} - ${fecha} ${hora}h - ${nombre}`);
-      const precioInt = Math.round(precio);
-      
-      // URL para crear preferencia en Mercado Pago
-      // Esto abre directamente el formulario de pago con los datos
-      const mpURL = `https://www.mercadopago.com.ar/integrations/v1/web-payment-checkout.js?preference-id=null&public-key=APP_USR-1062188237322463-010320-eedfc0c59fd646c15fd957f7141688b1-131807830`;
-      
-      // Alternativa: usar link directo de pago generado por backend o redireccionar a MP
-      // Por ahora, abrimos un formulario simple
-      abrirFormularioPago(nombre, email, tel, cancha, fecha, hora, precioInt, descripcion);
-    }
-    
-    function abrirFormularioPago(nombre, email, tel, cancha, fecha, hora, precio, descripcion) {
-      // Crear form para POST a Mercado Pago
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = 'https://www.mercadopago.com.ar/checkout/v1/redirect';
       form.target = '_blank';
       
-      // Agregar campos requeridos
       const campos = {
         'payer[name]': nombre,
         'payer[email]': email,
-        'payer[phone][number]': tel,
-        'items[0][title]': `Reserva ${cancha} - ${fecha}`,
+        'payer[phone][number]': tel || '1234567890',
+        'items[0][title]': `Reserva ${cancha} - ${fecha} ${hora}h`,
         'items[0][quantity]': '1',
-        'items[0][unit_price]': precio,
-        'marketplace': 'NONE'
+        'items[0][unit_price]': precio
       };
       
       for (let [key, value] of Object.entries(campos)) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = value;
-        form.appendChild(input);
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = key;
+        inp.value = value;
+        form.appendChild(inp);
       }
       
       document.body.appendChild(form);
