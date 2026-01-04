@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PadelMaster</title>
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; padding: 20px; }
@@ -16,11 +17,15 @@
     .form-group { margin-bottom: 15px; }
     label { display: block; color: #333; margin-bottom: 5px; font-weight: 500; font-size: 14px; }
     input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-    button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; }
     button:hover { background: #764ba2; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
     .item { padding: 12px; background: #f0f0f0; margin: 8px 0; border-left: 3px solid #667eea; border-radius: 3px; font-size: 13px; }
     .success { background: #4caf50; color: white; padding: 10px; border-radius: 4px; margin-bottom: 15px; display: none; text-align: center; font-size: 13px; }
     .info { background: #e3f2fd; color: #1565c0; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 12px; border-left: 3px solid #1565c0; }
+    #mpButton { display: none; }
+    .reserva-btn { display: none; }
+    .hidden { display: none; }
     @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -28,13 +33,13 @@
   <div class="container">
     <div class="header">
       <h1>PadelMaster</h1>
-      <p>Reserva de Turnos</p>
+      <p>Reserva de Turnos - Paga Primero</p>
     </div>
     <div class="grid">
       <div class="card">
-        <h2>Reservar Turno</h2>
-        <div class="success" id="success">✓ ¡Reserva guardada!</div>
-        <form onsubmit="guardar(event)">
+        <h2>Datos de Reserva</h2>
+        <div class="success" id="success">✓ ¡Pago acreditado! Ahora guarda tu reserva</div>
+        <form id="reservaForm" onsubmit="guardarReserva(event)">
           <div class="form-group">
             <label>Nombre</label>
             <input type="text" id="nombre" required>
@@ -81,24 +86,20 @@
               <option>21:00</option>
             </select>
           </div>
-          <button type="submit">📅 Guardar Reserva</button>
+          <button type="submit" class="reserva-btn" id="guardarBtn" disabled>📅 Guardar Reserva</button>
         </form>
       </div>
       <div class="card">
         <h2>Pagar Reserva</h2>
-        <div class="info">
-          💳 Coordina el pago por WhatsApp
+        <div class="info" id="infoDiv">
+          💳 Completa los datos y paga primero
         </div>
         <div class="form-group">
           <label>Precio por turno (ARS)</label>
           <input type="number" id="precio" value="500" min="1" required>
         </div>
-        <button onclick="pagarWhatsapp()" style="background: #25d366; margin-bottom: 10px;">
-          💬 Pagar por WhatsApp
-        </button>
-        <button onclick="llamarWhatsapp()" style="background: #128c7e;">
-          📞 Llamar por WhatsApp
-        </button>
+        <div id="mpButton"></div>
+        <button id="pagarMPBtn" onclick="iniciarPago()">💳 Pagar con Mercado Pago</button>
         <div style="margin-top: 20px;">
           <h3 style="color: #667eea; margin-bottom: 10px; font-size: 1.1em;">📋 Mis Reservas</h3>
           <div id="reservas"></div>
@@ -108,28 +109,126 @@
   </div>
 
   <script>
-    const NUMERO_WHATSAPP = '542314404315';
+    const TOKEN_MP = 'APP_USR-1062188237322463-010320-eedfc0c59fd646c15fd957f7141688b1-131807830';
+    let pagoAcreditado = false;
     
-    function guardar(event) {
+    function iniciarPago() {
+      const nombre = document.getElementById('nombre').value;
+      const email = document.getElementById('email').value;
+      const precio = document.getElementById('precio').value;
+      const cancha = document.getElementById('cancha').value;
+      const fecha = document.getElementById('fecha').value;
+      const hora = document.getElementById('hora').value;
+      
+      if (!nombre || !email || !cancha || !fecha || !hora) {
+        alert('Completa todos los datos');
+        return;
+      }
+      
+      crearPreferenciaMP(nombre, email, precio, cancha, fecha, hora);
+    }
+    
+    function crearPreferenciaMP(nombre, email, precio, cancha, fecha, hora) {
+      const preferenceData = {
+        items: [
+          {
+            title: `Reserva ${cancha} - ${fecha} ${hora}h`,
+            quantity: 1,
+            currency_id: 'ARS',
+            unit_price: parseInt(precio)
+          }
+        ],
+        payer: {
+          name: nombre,
+          email: email
+        },
+        back_urls: {
+          success: window.location.href + '?pago=success',
+          failure: window.location.href,
+          pending: window.location.href
+        },
+        notification_url: 'https://pumpkinhead94.github.io/padel-turnos/',
+        auto_return: 'approved'
+      };
+      
+      fetch('https://api.mercadopago.com/checkout/preferences', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TOKEN_MP}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(preferenceData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Preferencia creada:', data);
+        if (data.init_point) {
+          window.location.href = data.init_point;
+        } else if (data.sandbox_init_point) {
+          window.location.href = data.sandbox_init_point;
+        } else {
+          alert('Error al crear preferencia: ' + JSON.stringify(data));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error al conectar con Mercado Pago: ' + error);
+      });
+    }
+    
+    function verificarPago() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('pago') === 'success' || params.has('preference_id')) {
+        pagoAcreditado = true;
+        document.getElementById('pagarMPBtn').style.display = 'none';
+        document.getElementById('infoDiv').innerHTML = '✅ Pago acreditado! Completa y guarda tu reserva';
+        document.getElementById('infoDiv').style.background = '#c8e6c9';
+        document.getElementById('infoDiv').style.color = '#2e7d32';
+        document.getElementById('guardarBtn').disabled = false;
+        document.getElementById('guardarBtn').style.display = 'block';
+        document.getElementById('success').style.display = 'block';
+      }
+    }
+    
+    function guardarReserva(event) {
       event.preventDefault();
+      
+      if (!pagoAcreditado) {
+        alert('Debes pagar primero');
+        return;
+      }
+      
       const reserva = {
         nombre: document.getElementById('nombre').value,
         email: document.getElementById('email').value,
         telefono: document.getElementById('tel').value,
         cancha: document.getElementById('cancha').value,
         fecha: document.getElementById('fecha').value,
-        hora: document.getElementById('hora').value
+        hora: document.getElementById('hora').value,
+        precio: document.getElementById('precio').value
       };
+      
       let reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
       reservas.push(reserva);
       localStorage.setItem('reservas', JSON.stringify(reservas));
+      
       const s = document.getElementById('success');
+      s.innerHTML = '✅ ¡Reserva guardada con pago acreditado!';
       s.style.display = 'block';
-      setTimeout(() => { s.style.display = 'none'; }, 3000);
-      event.target.reset();
-      mostrarReservas();
+      
+      setTimeout(() => {
+        event.target.reset();
+        mostrarReservas();
+        pagoAcreditado = false;
+        document.getElementById('guardarBtn').disabled = true;
+        document.getElementById('pagarMPBtn').style.display = 'block';
+        document.getElementById('infoDiv').innerHTML = '💳 Realiza el pago para reservar';
+        document.getElementById('infoDiv').style.background = '#e3f2fd';
+        document.getElementById('infoDiv').style.color = '#1565c0';
+        s.style.display = 'none';
+      }, 2000);
     }
-
+    
     function mostrarReservas() {
       const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
       const c = document.getElementById('reservas');
@@ -141,35 +240,15 @@
       reservas.forEach(r => {
         const d = document.createElement('div');
         d.className = 'item';
-        d.innerHTML = `<strong>${r.cancha}</strong><br>${r.fecha} a las ${r.hora}<br><small>${r.nombre}</small>`;
+        d.innerHTML = `<strong>${r.cancha}</strong><br>${r.fecha} a las ${r.hora}<br><small>${r.nombre} - $${r.precio}</small>`;
         c.appendChild(d);
       });
     }
-
-    function pagarWhatsapp() {
-      const nombre = document.getElementById('nombre').value;
-      const cancha = document.getElementById('cancha').value;
-      const fecha = document.getElementById('fecha').value;
-      const hora = document.getElementById('hora').value;
-      const precio = document.getElementById('precio').value;
-      const telefono = document.getElementById('tel').value;
-      
-      if (!nombre) {
-        alert('Completa los datos de la reserva');
-        return;
-      }
-      
-      const mensaje = `Hola! Quiero pagar la reserva de pádel\n\n👤 Nombre: ${nombre}\n🏐 Cancha: ${cancha}\n📅 Fecha: ${fecha}\n🕐 Hora: ${hora}\n💰 Monto: $${precio} ARS\n📱 Teléfono: ${telefono}`;
-      const url = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
-      window.open(url, '_blank');
-    }
-
-    function llamarWhatsapp() {
-      const url = `https://wa.me/${NUMERO_WHATSAPP}`;
-      window.open(url, '_blank');
-    }
     
-    window.addEventListener('load', mostrarReservas);
+    window.addEventListener('load', () => {
+      verificarPago();
+      mostrarReservas();
+    });
   </script>
 </body>
 </html>
