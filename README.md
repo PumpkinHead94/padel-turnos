@@ -270,3 +270,6 @@ Las contribuciones son bienvenidas! Abre un issue o pull request.
 ---
 
 **Hecho con ❤️ para la comunidad de pádel de Argentina** 🇦🇷
+
+
+# Actualizacion: Token de Mercado Pago renovado
