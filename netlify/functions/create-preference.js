@@ -1,18 +1,35 @@
 const https = require('https');
-
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
 
+// Helper para agregar headers CORS a todas las respuestas
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Content-Type': 'application/json'
+};
+
 exports.handler = async (event) => {
+  // Manejar preflight requests (OPTIONS)
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: ''
+    };
+  }
+
+  // Validar método POST
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
+      headers: corsHeaders,
       body: JSON.stringify({ error: 'Method Not Allowed' })
     };
   }
 
   try {
     const data = JSON.parse(event.body);
-
     const preference = {
       items: [
         {
@@ -33,9 +50,9 @@ exports.handler = async (event) => {
         }
       },
       back_urls: {
-        success: 'https://pumpkinhead94.github.io/padel-turnos/',
-        failure: 'https://pumpkinhead94.github.io/padel-turnos/',
-        pending: 'https://pumpkinhead94.github.io/padel-turnos/'
+        success: 'https://sparkly-cendol-01012c.netlify.app/',
+        failure: 'https://sparkly-cendol-01012c.netlify.app/',
+        pending: 'https://sparkly-cendol-01012c.netlify.app/'
       },
       auto_return: 'approved',
       metadata: {
@@ -62,21 +79,15 @@ exports.handler = async (event) => {
 
       const req = https.request(options, (res) => {
         let responseData = '';
-
         res.on('data', (chunk) => {
           responseData += chunk;
         });
-
         res.on('end', () => {
           try {
             const response = JSON.parse(responseData);
-
             resolve({
               statusCode: 200,
-              headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-              },
+              headers: corsHeaders,
               body: JSON.stringify({
                 preference_id: response.id,
                 init_point: response.init_point
@@ -85,6 +96,7 @@ exports.handler = async (event) => {
           } catch (e) {
             resolve({
               statusCode: 500,
+              headers: corsHeaders,
               body: JSON.stringify({ error: 'Parse error', raw: responseData })
             });
           }
@@ -94,6 +106,7 @@ exports.handler = async (event) => {
       req.on('error', (e) => {
         resolve({
           statusCode: 500,
+          headers: corsHeaders,
           body: JSON.stringify({ error: e.message })
         });
       });
@@ -104,6 +117,7 @@ exports.handler = async (event) => {
   } catch (error) {
     return {
       statusCode: 500,
+      headers: corsHeaders,
       body: JSON.stringify({ error: error.message })
     };
   }
