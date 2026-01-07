@@ -1,7 +1,7 @@
 const https = require('https');
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
 
-// Helper para agregar headers CORS a todas las respuestas
+// CORS headers for all responses
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 exports.handler = async (event) => {
-  // Manejar preflight requests (OPTIONS)
+  // Handle preflight requests (OPTIONS)
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -19,7 +19,7 @@ exports.handler = async (event) => {
     };
   }
 
-  // Validar método POST
+  // Validate POST method
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
